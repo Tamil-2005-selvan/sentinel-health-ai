@@ -35,9 +35,11 @@ import {
   Lock,
   Eye,
   EyeOff,
+  Accessibility,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNotificationStore } from "@/hooks/use-notifications";
+import AccessibilityPreferences from "@/components/settings/AccessibilityPreferences";
 
 const DoctorProfile: React.FC = () => {
   const { soundEnabled, toggleSound } = useNotificationStore();
@@ -171,17 +173,21 @@ const DoctorProfile: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6">
+              <TabsList className="grid w-full grid-cols-4 mb-6">
                 <TabsTrigger value="profile" className="gap-2">
-                  <User className="w-4 h-4" />
+                  <User className="w-4 h-4" aria-hidden="true" />
                   <span className="hidden sm:inline">Profile</span>
                 </TabsTrigger>
                 <TabsTrigger value="notifications" className="gap-2">
-                  <Bell className="w-4 h-4" />
+                  <Bell className="w-4 h-4" aria-hidden="true" />
                   <span className="hidden sm:inline">Notifications</span>
                 </TabsTrigger>
+                <TabsTrigger value="accessibility" className="gap-2">
+                  <Accessibility className="w-4 h-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">Accessibility</span>
+                </TabsTrigger>
                 <TabsTrigger value="security" className="gap-2">
-                  <Shield className="w-4 h-4" />
+                  <Shield className="w-4 h-4" aria-hidden="true" />
                   <span className="hidden sm:inline">Security</span>
                 </TabsTrigger>
               </TabsList>
@@ -479,6 +485,14 @@ const DoctorProfile: React.FC = () => {
                       Save Preferences
                     </Button>
                   </div>
+                </div>
+              </TabsContent>
+
+              {/* Accessibility Tab */}
+              <TabsContent value="accessibility">
+                <div className="glass-card p-6">
+                  <h3 className="text-lg font-semibold mb-6">Accessibility Preferences</h3>
+                  <AccessibilityPreferences />
                 </div>
               </TabsContent>
 
