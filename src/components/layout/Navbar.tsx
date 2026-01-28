@@ -76,6 +76,14 @@ const Navbar: React.FC = () => {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => navigate("/profile")} 
+                className="cursor-pointer"
+              >
+                <User className="w-4 h-4 mr-2" />
+                Profile & Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
