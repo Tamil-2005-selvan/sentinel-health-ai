@@ -3,24 +3,19 @@ import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { PatientAlertCard } from "@/components/dashboard/PatientAlertCard";
+import { VitalSignsCharts } from "@/components/dashboard/VitalSignsCharts";
+import { PatientDistributionChart } from "@/components/dashboard/PatientDistributionChart";
 import { StatusType } from "@/components/ui/status-badge";
 import { NotificationSimulator } from "@/components/notifications/NotificationToast";
 import { Users, CheckCircle, AlertTriangle, AlertOctagon, Activity } from "lucide-react";
 
-// Mock patient data
+// Mock patient data - show only top 4 alerts
 const patientAlerts = [
   {
     patientId: "PT-****-7823",
     status: "critical" as StatusType,
     riskScore: 89,
     timestamp: "2 min ago",
-    verified: true,
-  },
-  {
-    patientId: "PT-****-4521",
-    status: "warning" as StatusType,
-    riskScore: 67,
-    timestamp: "8 min ago",
     verified: true,
   },
   {
@@ -31,10 +26,10 @@ const patientAlerts = [
     verified: true,
   },
   {
-    patientId: "PT-****-3847",
-    status: "normal" as StatusType,
-    riskScore: 23,
-    timestamp: "15 min ago",
+    patientId: "PT-****-4521",
+    status: "warning" as StatusType,
+    riskScore: 67,
+    timestamp: "8 min ago",
     verified: true,
   },
   {
@@ -42,13 +37,6 @@ const patientAlerts = [
     status: "warning" as StatusType,
     riskScore: 58,
     timestamp: "22 min ago",
-    verified: true,
-  },
-  {
-    patientId: "PT-****-1056",
-    status: "normal" as StatusType,
-    riskScore: 15,
-    timestamp: "30 min ago",
     verified: true,
   },
 ];
@@ -115,11 +103,18 @@ const Dashboard: React.FC = () => {
           />
         </div>
 
+        {/* Vital Signs Charts */}
+        <VitalSignsCharts />
+
+        {/* Analytics Charts */}
+        <PatientDistributionChart />
+
         {/* Patient Alerts Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-10"
         >
           <div className="flex items-center justify-between mb-6">
             <div>
