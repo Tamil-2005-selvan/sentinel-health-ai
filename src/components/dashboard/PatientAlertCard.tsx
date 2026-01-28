@@ -33,8 +33,10 @@ const PatientAlertCard: React.FC<PatientAlertCardProps> = ({
   onSelectionChange,
   acknowledged = false,
 }) => {
+  const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+  
   return (
-    <motion.div
+    <motion.article
       className={cn(
         "relative overflow-hidden rounded-xl p-5 bg-white/70 backdrop-blur-xl",
         "border border-white/20 shadow-md hover:shadow-xl transition-all duration-300",
@@ -46,6 +48,8 @@ const PatientAlertCard: React.FC<PatientAlertCardProps> = ({
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay: index * 0.08 }}
       whileHover={{ scale: 1.01, x: 4 }}
+      aria-label={`Patient ${patientId}, ${statusLabel} status, risk score ${riskScore}%${acknowledged ? ", acknowledged" : ""}`}
+      role="article"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start gap-4 flex-1">
@@ -55,6 +59,7 @@ const PatientAlertCard: React.FC<PatientAlertCardProps> = ({
                 checked={selected}
                 onCheckedChange={(checked) => onSelectionChange?.(checked as boolean)}
                 className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                aria-label={`Select patient ${patientId}`}
               />
             </div>
           )}
@@ -65,10 +70,13 @@ const PatientAlertCard: React.FC<PatientAlertCardProps> = ({
                 {patientId}
               </h3>
               <StatusBadge status={status} pulse={status === "critical" && !acknowledged}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+                {statusLabel}
               </StatusBadge>
               {acknowledged && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/20 text-secondary font-medium">
+                <span 
+                  className="text-xs px-2 py-0.5 rounded-full bg-secondary/20 text-secondary font-medium"
+                  aria-label="Alert acknowledged"
+                >
                   Acknowledged
                 </span>
               )}
@@ -76,7 +84,7 @@ const PatientAlertCard: React.FC<PatientAlertCardProps> = ({
 
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-1.5">
-                <TrendingUp className="w-4 h-4" />
+                <TrendingUp className="w-4 h-4" aria-hidden="true" />
                 <span>Risk Score: <strong className={cn(
                   status === "normal" && "text-status-normal",
                   status === "warning" && "text-status-warning",
@@ -84,8 +92,8 @@ const PatientAlertCard: React.FC<PatientAlertCardProps> = ({
                 )}>{riskScore}%</strong></span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4" />
-                <span>{timestamp}</span>
+                <Clock className="w-4 h-4" aria-hidden="true" />
+                <time>{timestamp}</time>
               </div>
             </div>
 
@@ -93,12 +101,12 @@ const PatientAlertCard: React.FC<PatientAlertCardProps> = ({
           </div>
         </div>
 
-        <Link to={`/patient-detail?id=${patientId}`}>
+        <Link to={`/patient-detail?id=${patientId}`} aria-label={`View details for patient ${patientId}`}>
           <Button
             variant="outline"
             className="gap-2 border-primary/20 hover:bg-primary/5 hover:border-primary/40"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-4 h-4" aria-hidden="true" />
             View Details
           </Button>
         </Link>
@@ -110,9 +118,10 @@ const PatientAlertCard: React.FC<PatientAlertCardProps> = ({
           initial={{ scaleY: 0 }}
           animate={{ scaleY: 1 }}
           transition={{ duration: 0.4, delay: index * 0.08 + 0.2 }}
+          aria-hidden="true"
         />
       )}
-    </motion.div>
+    </motion.article>
   );
 };
 
