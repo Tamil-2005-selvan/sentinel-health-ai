@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
+import { DashboardBackground } from "@/components/dashboard/DashboardBackground";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { PatientAlertCard } from "@/components/dashboard/PatientAlertCard";
 import { VitalSignsCharts } from "@/components/dashboard/VitalSignsCharts";
@@ -15,7 +17,7 @@ import { StatusType } from "@/components/ui/status-badge";
 import { NotificationSimulator } from "@/components/notifications/NotificationToast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { Users, CheckCircle, AlertTriangle, AlertOctagon, Activity } from "lucide-react";
+import { Users, CheckCircle, AlertTriangle, AlertOctagon } from "lucide-react";
 
 // Mock patient data - expanded for filtering demo
 const allPatientAlerts = [
@@ -229,28 +231,16 @@ const Dashboard: React.FC = () => {
         { href: "#patient-alerts", label: "Skip to patient alerts" },
       ]} />
       
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+      {/* Full-page background system */}
+      <DashboardBackground />
+      
+      <div className="relative min-h-screen z-10">
         <Navbar />
         <NotificationSimulator />
 
         <main id="main-content" className="container px-4 md:px-6 py-8" role="main">
-          {/* Header */}
-        <motion.div
-          className="mb-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <Activity className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">
-              Patient Monitoring Dashboard
-            </h1>
-          </div>
-          <p className="text-muted-foreground">
-            Real-time AI-powered health status monitoring with blockchain verification
-          </p>
-        </motion.div>
+          {/* Enterprise Header */}
+          <DashboardHeader />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">

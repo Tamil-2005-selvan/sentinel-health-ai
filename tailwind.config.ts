@@ -73,9 +73,13 @@ export default {
         'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
         'glow': '0 0 20px hsl(217 91% 60% / 0.3)',
         'glow-teal': '0 0 20px hsl(173 80% 40% / 0.3)',
+        'card': '0 4px 24px -8px hsl(217 91% 60% / 0.1), 0 0 0 1px hsl(0 0% 100% / 0.4)',
+        'card-hover': '0 8px 40px -12px hsl(217 91% 60% / 0.18), 0 0 0 1px hsl(217 91% 60% / 0.1)',
+        'enterprise': '0 16px 48px -12px hsl(217 91% 60% / 0.15), 0 0 0 1px hsl(0 0% 100% / 0.5)',
       },
       backdropBlur: {
         'glass': '20px',
+        'enterprise': '24px',
       },
       keyframes: {
         "accordion-down": {
