@@ -10,9 +10,11 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { User, Heart, Activity, Droplets, Thermometer } from "lucide-react";
+import { User, Heart, Activity, Droplets, Thermometer, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatusBadge, StatusType } from "@/components/ui/status-badge";
+import { Button } from "@/components/ui/button";
+import { PatientVitalsModal, PatientInfo } from "@/components/dashboard/PatientVitalsModal";
 
 interface PatientVitalDataPoint {
   time: string;
@@ -83,9 +85,10 @@ const initialPatients: PatientData[] = [
 interface PatientVitalGraphProps {
   patient: PatientData;
   delay?: number;
+  onViewDetails: (patient: PatientInfo) => void;
 }
 
-const PatientVitalGraph: React.FC<PatientVitalGraphProps> = ({ patient, delay = 0 }) => {
+const PatientVitalGraph: React.FC<PatientVitalGraphProps> = ({ patient, delay = 0, onViewDetails }) => {
   const [vitals, setVitals] = useState<PatientVitalDataPoint[]>(patient.vitals);
 
   // Real-time updates for this specific patient
@@ -142,13 +145,41 @@ const PatientVitalGraph: React.FC<PatientVitalGraphProps> = ({ patient, delay = 
     }
   };
 
+  const handleClick = () => {
+    onViewDetails({
+      patientId: patient.patientId,
+      name: patient.name,
+      age: patient.age,
+      ward: patient.ward,
+      status: patient.status,
+    });
+  };
+
   return (
     <motion.div
-      className="glass-card p-5"
+      className="glass-card p-5 cursor-pointer group relative"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: delay * 0.15 }}
+      whileHover={{ scale: 1.01 }}
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+      aria-label={`View detailed vitals for ${patient.name}`}
     >
+      {/* Expand Indicator */}
+      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button variant="ghost" size="icon" className="h-8 w-8" tabIndex={-1}>
+          <Maximize2 className="w-4 h-4 text-muted-foreground" />
+        </Button>
+      </div>
+
       {/* Patient Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -294,49 +325,73 @@ const PatientVitalGraph: React.FC<PatientVitalGraphProps> = ({ patient, delay = 
           </LineChart>
         </ResponsiveContainer>
       </div>
+
+      {/* Click hint */}
+      <p className="text-xs text-center text-muted-foreground mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        Click to view detailed history & trends
+      </p>
     </motion.div>
   );
 };
 
 const IndividualPatientCharts: React.FC = () => {
   const [patients] = useState<PatientData[]>(initialPatients);
+  const [selectedPatient, setSelectedPatient] = useState<PatientInfo | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const handleViewDetails = (patient: PatientInfo) => {
+    setSelectedPatient(patient);
+    setModalOpen(true);
+  };
 
   return (
-    <motion.div
-      className="mt-10"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5, delay: 0.3 }}
-    >
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-semibold text-foreground">
-            Individual Patient Vitals
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Raw patient-specific vital signs data (not aggregated)
-          </p>
+    <>
+      <motion.div
+        className="mt-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-foreground">
+              Individual Patient Vitals
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Raw patient-specific vital signs data (click to view detailed history)
+            </p>
+          </div>
+          <motion.div
+            className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full"
+            animate={{ opacity: [1, 0.7, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <span className="w-2 h-2 rounded-full bg-primary" />
+            <span className="text-xs font-medium text-primary">Live Updates</span>
+          </motion.div>
         </div>
-        <motion.div
-          className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full"
-          animate={{ opacity: [1, 0.7, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <span className="w-2 h-2 rounded-full bg-primary" />
-          <span className="text-xs font-medium text-primary">Live Updates</span>
-        </motion.div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {patients.map((patient, index) => (
-          <PatientVitalGraph
-            key={patient.patientId}
-            patient={patient}
-            delay={index}
-          />
-        ))}
-      </div>
-    </motion.div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {patients.map((patient, index) => (
+            <PatientVitalGraph
+              key={patient.patientId}
+              patient={patient}
+              delay={index}
+              onViewDetails={handleViewDetails}
+            />
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Patient Vitals Modal */}
+      {selectedPatient && (
+        <PatientVitalsModal
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          patient={selectedPatient}
+        />
+      )}
+    </>
   );
 };
 
