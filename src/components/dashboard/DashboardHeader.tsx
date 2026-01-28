@@ -70,20 +70,6 @@ export const DashboardHeader: React.FC = () => {
           <span className="font-medium text-primary">machine learning predictions</span> and{" "}
           <span className="font-medium text-secondary">immutable audit trails</span>
         </p>
-        
-        <div className="flex items-center gap-4 text-xs">
-          <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
-            <span className="text-muted-foreground">Latency:</span>
-            <span className="font-semibold text-foreground">&lt;50ms</span>
-          </div>
-          <div className="w-px h-4 bg-border" />
-          <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-status-normal" />
-            <span className="text-muted-foreground">Accuracy:</span>
-            <span className="font-semibold text-foreground">98.4%</span>
-          </div>
-        </div>
       </motion.div>
     </motion.div>
   );
