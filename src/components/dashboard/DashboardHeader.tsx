@@ -22,7 +22,6 @@ export const DashboardHeader: React.FC = () => {
             transition={{ delay: 0.2 }}
           >
             <div className="flex items-center gap-1">
-              <Brain className="w-3.5 h-3.5 text-primary" />
               <span className="text-xs font-medium text-primary">AI-Powered</span>
             </div>
             <div className="w-px h-3 bg-primary/30" />
