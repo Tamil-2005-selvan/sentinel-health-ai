@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -6,8 +6,10 @@ import { PatientAlertCard } from "@/components/dashboard/PatientAlertCard";
 import { VitalSignsCharts } from "@/components/dashboard/VitalSignsCharts";
 import { PatientDistributionChart } from "@/components/dashboard/PatientDistributionChart";
 import { PatientFilters, FilterState } from "@/components/dashboard/PatientFilters";
+import { BulkActionsToolbar } from "@/components/dashboard/BulkActionsToolbar";
 import { StatusType } from "@/components/ui/status-badge";
 import { NotificationSimulator } from "@/components/notifications/NotificationToast";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Users, CheckCircle, AlertTriangle, AlertOctagon, Activity } from "lucide-react";
 
 // Mock patient data - expanded for filtering demo
@@ -100,6 +102,10 @@ const Dashboard: React.FC = () => {
     dateRange: { from: undefined, to: undefined },
   });
 
+  const [selectedPatients, setSelectedPatients] = useState<Set<string>>(new Set());
+  const [acknowledgedPatients, setAcknowledgedPatients] = useState<Set<string>>(new Set());
+  const [patientWards, setPatientWards] = useState<Record<string, string>>({});
+
   const filteredPatients = useMemo(() => {
     return allPatientAlerts.filter((patient) => {
       // Search filter
@@ -110,8 +116,9 @@ const Dashboard: React.FC = () => {
       if (filters.status !== "all" && patient.status !== filters.status) {
         return false;
       }
-      // Ward filter
-      if (filters.ward !== "All Wards" && patient.ward !== filters.ward) {
+      // Ward filter - check both original and assigned ward
+      const currentWard = patientWards[patient.patientId] || patient.ward;
+      if (filters.ward !== "All Wards" && currentWard !== filters.ward) {
         return false;
       }
       // Risk score filter
@@ -127,7 +134,56 @@ const Dashboard: React.FC = () => {
       }
       return true;
     });
-  }, [filters]);
+  }, [filters, patientWards]);
+
+  const handleSelectPatient = useCallback((patientId: string, selected: boolean) => {
+    setSelectedPatients(prev => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(patientId);
+      } else {
+        newSet.delete(patientId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const handleSelectAll = useCallback((checked: boolean) => {
+    if (checked) {
+      setSelectedPatients(new Set(filteredPatients.map(p => p.patientId)));
+    } else {
+      setSelectedPatients(new Set());
+    }
+  }, [filteredPatients]);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedPatients(new Set());
+  }, []);
+
+  const handleAcknowledge = useCallback((ids: string[]) => {
+    setAcknowledgedPatients(prev => {
+      const newSet = new Set(prev);
+      ids.forEach(id => newSet.add(id));
+      return newSet;
+    });
+  }, []);
+
+  const handleAssignWard = useCallback((ids: string[], ward: string) => {
+    setPatientWards(prev => {
+      const updated = { ...prev };
+      ids.forEach(id => {
+        updated[id] = ward;
+      });
+      return updated;
+    });
+  }, []);
+
+  const handleExport = useCallback((ids: string[]) => {
+    console.log("Exported patients:", ids);
+  }, []);
+
+  const allSelected = filteredPatients.length > 0 && filteredPatients.every(p => selectedPatients.has(p.patientId));
+  const someSelected = filteredPatients.some(p => selectedPatients.has(p.patientId)) && !allSelected;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
@@ -220,6 +276,39 @@ const Dashboard: React.FC = () => {
           {/* Filters */}
           <PatientFilters filters={filters} onFiltersChange={setFilters} />
 
+          {/* Bulk Actions Toolbar */}
+          <BulkActionsToolbar
+            selectedCount={selectedPatients.size}
+            selectedIds={Array.from(selectedPatients)}
+            onClearSelection={handleClearSelection}
+            onAcknowledge={handleAcknowledge}
+            onAssignWard={handleAssignWard}
+            onExport={handleExport}
+          />
+
+          {/* Select All Header */}
+          {filteredPatients.length > 0 && (
+            <div className="flex items-center gap-3 mb-4 p-3 rounded-lg bg-muted/30">
+              <Checkbox
+                checked={allSelected}
+                ref={(el) => {
+                  if (el) {
+                    (el as HTMLButtonElement & { indeterminate?: boolean }).indeterminate = someSelected;
+                  }
+                }}
+                onCheckedChange={handleSelectAll}
+                className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+              />
+              <span className="text-sm text-muted-foreground">
+                {allSelected 
+                  ? `All ${filteredPatients.length} patients selected` 
+                  : someSelected 
+                    ? `${selectedPatients.size} of ${filteredPatients.length} selected`
+                    : "Select all patients"}
+              </span>
+            </div>
+          )}
+
           <div className="space-y-4">
             {filteredPatients.length === 0 ? (
               <div className="glass-card p-8 text-center">
@@ -235,6 +324,10 @@ const Dashboard: React.FC = () => {
                   timestamp={alert.timestamp}
                   verified={alert.verified}
                   index={index}
+                  selectable={true}
+                  selected={selectedPatients.has(alert.patientId)}
+                  onSelectionChange={(selected) => handleSelectPatient(alert.patientId, selected)}
+                  acknowledged={acknowledgedPatients.has(alert.patientId)}
                 />
               ))
             )}
