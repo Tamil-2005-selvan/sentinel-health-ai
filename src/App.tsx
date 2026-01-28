@@ -11,6 +11,7 @@ import PatientHistory from "./pages/PatientHistory";
 import PatientDetail from "./pages/PatientDetail";
 import AuditTrail from "./pages/AuditTrail";
 import DoctorProfile from "./pages/DoctorProfile";
+import ShiftHandover from "./pages/ShiftHandover";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/patient-detail" element={<PatientDetail />} />
               <Route path="/audit-trail" element={<AuditTrail />} />
               <Route path="/profile" element={<DoctorProfile />} />
+              <Route path="/shift-handover" element={<ShiftHandover />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
