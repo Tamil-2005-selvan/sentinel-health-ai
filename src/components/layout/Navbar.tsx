@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -53,7 +54,8 @@ const Navbar: React.FC = () => {
           <NavItem to="/audit-trail" label="Audit Trail" />
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <NotificationCenter />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
