@@ -73,12 +73,6 @@ export const DashboardHeader: React.FC = () => {
         
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-            <span className="text-muted-foreground">Uptime:</span>
-            <span className="font-semibold text-foreground">99.97%</span>
-          </div>
-          <div className="w-px h-4 bg-border" />
-          <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
             <span className="text-muted-foreground">Latency:</span>
             <span className="font-semibold text-foreground">&lt;50ms</span>
