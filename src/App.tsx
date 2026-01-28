@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import PatientHistory from "./pages/PatientHistory";
 import PatientDetail from "./pages/PatientDetail";
 import AuditTrail from "./pages/AuditTrail";
+import DoctorProfile from "./pages/DoctorProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/patient-history" element={<PatientHistory />} />
           <Route path="/patient-detail" element={<PatientDetail />} />
           <Route path="/audit-trail" element={<AuditTrail />} />
+          <Route path="/profile" element={<DoctorProfile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
