@@ -65,7 +65,7 @@ const PatientAlertCard: React.FC<PatientAlertCardProps> = ({
           <BlockchainBadge verified={verified} size="sm" />
         </div>
 
-        <Link to={`/patient-history?id=${patientId}`}>
+        <Link to={`/patient-detail?id=${patientId}`}>
           <Button
             variant="outline"
             className="gap-2 border-primary/20 hover:bg-primary/5 hover:border-primary/40"
