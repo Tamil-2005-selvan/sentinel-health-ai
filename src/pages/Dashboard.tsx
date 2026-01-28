@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { PatientAlertCard } from "@/components/dashboard/PatientAlertCard";
 import { StatusType } from "@/components/ui/status-badge";
+import { NotificationSimulator } from "@/components/notifications/NotificationToast";
 import { Users, CheckCircle, AlertTriangle, AlertOctagon, Activity } from "lucide-react";
 
 // Mock patient data
@@ -61,6 +62,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
       <Navbar />
+      <NotificationSimulator />
 
       <main className="container px-4 md:px-6 py-8">
         {/* Header */}
