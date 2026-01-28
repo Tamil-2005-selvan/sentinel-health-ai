@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { AlertOctagon, AlertTriangle, CheckCircle, ExternalLink } from "lucide-react";
 import { useNotificationStore } from "@/hooks/use-notifications";
+import { useScreenReader } from "@/components/accessibility/ScreenReaderProvider";
 import { StatusType } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
 
@@ -44,12 +45,16 @@ export const showPatientAlert = (
           config.borderColor,
           status === "critical" && "animate-pulse-critical"
         )}
+        role="alert"
+        aria-live={status === "critical" ? "assertive" : "polite"}
+        aria-label={`${status} alert for patient ${patientId}: ${message}. Risk score ${riskScore} percent.`}
       >
         <div
           className={cn(
             "flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl",
             config.bgColor
           )}
+          aria-hidden="true"
         >
           <Icon className={cn("w-5 h-5", config.textColor)} />
         </div>
@@ -63,6 +68,7 @@ export const showPatientAlert = (
                 config.bgColor,
                 config.textColor
               )}
+              aria-label={`Risk score: ${riskScore} percent`}
             >
               Risk: {riskScore}%
             </span>
@@ -74,8 +80,9 @@ export const showPatientAlert = (
               config.textColor
             )}
             onClick={() => toast.dismiss(t)}
+            aria-label={`View details for patient ${patientId}`}
           >
-            <ExternalLink className="w-3 h-3" />
+            <ExternalLink className="w-3 h-3" aria-hidden="true" />
             View Details
           </button>
         </div>
@@ -92,6 +99,18 @@ export const showPatientAlert = (
 const NotificationSimulator: React.FC = () => {
   const { addNotification } = useNotificationStore();
   const hasSimulated = useRef(false);
+  
+  // Try to use screen reader, but handle gracefully if not available
+  let announceAssertive: ((message: string) => void) | null = null;
+  let announcePolite: ((message: string) => void) | null = null;
+  
+  try {
+    const screenReader = useScreenReader();
+    announceAssertive = screenReader.announceAssertive;
+    announcePolite = screenReader.announcePolite;
+  } catch {
+    // Screen reader context not available, continue without announcements
+  }
 
   useEffect(() => {
     if (hasSimulated.current) return;
@@ -113,6 +132,13 @@ const NotificationSimulator: React.FC = () => {
         notification.message,
         notification.riskScore
       );
+      
+      // Announce to screen readers
+      if (announceAssertive) {
+        announceAssertive(
+          `Critical alert: Patient ${notification.patientId}. ${notification.message}. Risk score ${notification.riskScore} percent.`
+        );
+      }
     }, 8000);
 
     // Simulate a warning after 15 seconds
@@ -131,13 +157,20 @@ const NotificationSimulator: React.FC = () => {
         notification.message,
         notification.riskScore
       );
+      
+      // Announce to screen readers
+      if (announcePolite) {
+        announcePolite(
+          `Warning: Patient ${notification.patientId}. ${notification.message}. Risk score ${notification.riskScore} percent.`
+        );
+      }
     }, 18000);
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [addNotification]);
+  }, [addNotification, announceAssertive, announcePolite]);
 
   return null;
 };
