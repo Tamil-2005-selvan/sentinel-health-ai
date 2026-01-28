@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { PatientAlertCard } from "@/components/dashboard/PatientAlertCard";
 import { VitalSignsCharts } from "@/components/dashboard/VitalSignsCharts";
+import { IndividualPatientCharts } from "@/components/dashboard/IndividualPatientCharts";
 import { PatientDistributionChart } from "@/components/dashboard/PatientDistributionChart";
 import { PatientFilters, FilterState } from "@/components/dashboard/PatientFilters";
 import { BulkActionsToolbar, BulkActionsToolbarRef } from "@/components/dashboard/BulkActionsToolbar";
@@ -285,6 +286,9 @@ const Dashboard: React.FC = () => {
 
         {/* Vital Signs Charts */}
         <VitalSignsCharts />
+
+        {/* Individual Patient Vital Charts */}
+        <IndividualPatientCharts />
 
         {/* Analytics Charts */}
         <PatientDistributionChart />
