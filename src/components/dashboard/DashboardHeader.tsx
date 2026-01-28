@@ -56,35 +56,6 @@ export const DashboardHeader: React.FC = () => {
           </div>
         </div>
 
-        {/* Status indicators */}
-        <div className="flex flex-wrap items-center gap-3">
-          <motion.div
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/60 backdrop-blur-sm border border-white/40 shadow-sm"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Cpu className="w-4 h-4 text-primary" />
-            <span className="text-xs font-medium text-muted-foreground">AI Model</span>
-            <span className="text-xs font-semibold text-primary">v4.2</span>
-          </motion.div>
-
-          <BlockchainBadge verified={true} />
-
-          <motion.div
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-status-normal/10 border border-status-normal/20"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <motion.span
-              className="w-2 h-2 rounded-full bg-status-normal"
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            <span className="text-xs font-medium text-status-normal">All Systems Operational</span>
-          </motion.div>
-        </div>
       </div>
 
       {/* Subheading with metrics bar */}
