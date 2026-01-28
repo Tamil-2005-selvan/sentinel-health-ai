@@ -7,7 +7,8 @@ import {
   LogOut, 
   User, 
   Shield,
-  Menu
+  Menu,
+  ArrowRightLeft
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -50,6 +51,7 @@ const Navbar: React.FC = () => {
 
         <nav className="hidden md:flex items-center gap-1">
           <NavItem to="/dashboard" label="Dashboard" />
+          <NavItem to="/shift-handover" label="Handover" />
           <NavItem to="/patient-history" label="Patient History" />
           <NavItem to="/audit-trail" label="Audit Trail" />
         </nav>
@@ -100,6 +102,9 @@ const Navbar: React.FC = () => {
             <DropdownMenuContent align="end" className="w-48 glass-card md:hidden">
               <DropdownMenuItem asChild>
                 <Link to="/dashboard">Dashboard</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/shift-handover">Shift Handover</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/patient-history">Patient History</Link>
