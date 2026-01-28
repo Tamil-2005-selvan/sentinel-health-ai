@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from "react";
+import React, { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -8,6 +8,8 @@ import { PatientDistributionChart } from "@/components/dashboard/PatientDistribu
 import { PatientFilters, FilterState } from "@/components/dashboard/PatientFilters";
 import { BulkActionsToolbar, BulkActionsToolbarRef } from "@/components/dashboard/BulkActionsToolbar";
 import { KeyboardShortcutsHelp } from "@/components/dashboard/KeyboardShortcutsHelp";
+import { SkipLinks } from "@/components/accessibility/SkipLinks";
+import { useScreenReader } from "@/components/accessibility/ScreenReaderProvider";
 import { StatusType } from "@/components/ui/status-badge";
 import { NotificationSimulator } from "@/components/notifications/NotificationToast";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -96,6 +98,8 @@ const Dashboard: React.FC = () => {
   const warningCount = 112;
   const criticalCount = 46;
 
+  const { announcePolite, announceAssertive } = useScreenReader();
+
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     status: "all",
@@ -107,6 +111,7 @@ const Dashboard: React.FC = () => {
   const [selectedPatients, setSelectedPatients] = useState<Set<string>>(new Set());
   const [acknowledgedPatients, setAcknowledgedPatients] = useState<Set<string>>(new Set());
   const [patientWards, setPatientWards] = useState<Record<string, string>>({});
+  const prevFilteredCountRef = useRef<number>(0);
   
   const bulkActionsRef = useRef<BulkActionsToolbarRef>(null);
 
@@ -140,29 +145,47 @@ const Dashboard: React.FC = () => {
     });
   }, [filters, patientWards]);
 
+  // Announce filter changes to screen readers
+  useEffect(() => {
+    const currentCount = filteredPatients.length;
+    if (prevFilteredCountRef.current !== currentCount) {
+      const criticalCount = filteredPatients.filter(p => p.status === "critical").length;
+      const announcement = criticalCount > 0 
+        ? `Showing ${currentCount} patient${currentCount !== 1 ? "s" : ""}, ${criticalCount} critical`
+        : `Showing ${currentCount} patient${currentCount !== 1 ? "s" : ""}`;
+      announcePolite(announcement);
+      prevFilteredCountRef.current = currentCount;
+    }
+  }, [filteredPatients, announcePolite]);
+
   const handleSelectPatient = useCallback((patientId: string, selected: boolean) => {
     setSelectedPatients(prev => {
       const newSet = new Set(prev);
       if (selected) {
         newSet.add(patientId);
+        announcePolite(`Selected patient ${patientId}`);
       } else {
         newSet.delete(patientId);
+        announcePolite(`Deselected patient ${patientId}`);
       }
       return newSet;
     });
-  }, []);
+  }, [announcePolite]);
 
   const handleSelectAll = useCallback((checked: boolean) => {
     if (checked) {
       setSelectedPatients(new Set(filteredPatients.map(p => p.patientId)));
+      announcePolite(`Selected all ${filteredPatients.length} patients`);
     } else {
       setSelectedPatients(new Set());
+      announcePolite("Cleared selection");
     }
-  }, [filteredPatients]);
+  }, [filteredPatients, announcePolite]);
 
   const handleClearSelection = useCallback(() => {
     setSelectedPatients(new Set());
-  }, []);
+    announcePolite("Selection cleared");
+  }, [announcePolite]);
 
   const handleAcknowledge = useCallback((ids: string[]) => {
     setAcknowledgedPatients(prev => {
@@ -199,12 +222,18 @@ const Dashboard: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
-      <Navbar />
-      <NotificationSimulator />
+    <>
+      <SkipLinks links={[
+        { href: "#main-content", label: "Skip to main content" },
+        { href: "#patient-alerts", label: "Skip to patient alerts" },
+      ]} />
+      
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+        <Navbar />
+        <NotificationSimulator />
 
-      <main className="container px-4 md:px-6 py-8">
-        {/* Header */}
+        <main id="main-content" className="container px-4 md:px-6 py-8" role="main">
+          {/* Header */}
         <motion.div
           className="mb-8"
           initial={{ opacity: 0, y: -20 }}
@@ -261,74 +290,85 @@ const Dashboard: React.FC = () => {
         <PatientDistributionChart />
 
         {/* Patient Alerts Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+        <section
+          id="patient-alerts"
+          aria-labelledby="patient-alerts-heading"
           className="mt-10"
         >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground" id="patient-alerts-heading">
-                Patient Alerts
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                AI-analyzed health predictions with blockchain verification
-              </p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground" id="patient-alerts-heading">
+                  Patient Alerts
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  AI-analyzed health predictions with blockchain verification
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <KeyboardShortcutsHelp />
+                <motion.div
+                  className="hidden sm:flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-full"
+                  animate={{ scale: [1, 1.02, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  aria-label="Live updates indicator"
+                >
+                  <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" aria-hidden="true" />
+                  <span className="text-sm font-medium text-secondary">Live Updates</span>
+                </motion.div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <KeyboardShortcutsHelp />
-              <motion.div
-                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-full"
-                animate={{ scale: [1, 1.02, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                aria-label="Live updates indicator"
-              >
-                <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" aria-hidden="true" />
-                <span className="text-sm font-medium text-secondary">Live Updates</span>
-              </motion.div>
-            </div>
-          </div>
 
-          {/* Filters */}
-          <PatientFilters filters={filters} onFiltersChange={setFilters} />
+            {/* Filters */}
+            <PatientFilters filters={filters} onFiltersChange={setFilters} />
 
-          {/* Bulk Actions Toolbar */}
-          <BulkActionsToolbar
-            ref={bulkActionsRef}
-            selectedCount={selectedPatients.size}
-            selectedIds={Array.from(selectedPatients)}
-            onClearSelection={handleClearSelection}
-            onAcknowledge={handleAcknowledge}
-            onAssignWard={handleAssignWard}
-            onExport={handleExport}
-          />
+            {/* Bulk Actions Toolbar */}
+            <BulkActionsToolbar
+              ref={bulkActionsRef}
+              selectedCount={selectedPatients.size}
+              selectedIds={Array.from(selectedPatients)}
+              onClearSelection={handleClearSelection}
+              onAcknowledge={handleAcknowledge}
+              onAssignWard={handleAssignWard}
+              onExport={handleExport}
+            />
 
-          {/* Select All Header */}
-          {filteredPatients.length > 0 && (
-            <div className="flex items-center gap-3 mb-4 p-3 rounded-lg bg-muted/30">
-              <Checkbox
-                checked={allSelected}
-                ref={(el) => {
-                  if (el) {
-                    (el as HTMLButtonElement & { indeterminate?: boolean }).indeterminate = someSelected;
-                  }
-                }}
-                onCheckedChange={handleSelectAll}
-                className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-              />
-              <span className="text-sm text-muted-foreground">
-                {allSelected 
-                  ? `All ${filteredPatients.length} patients selected` 
-                  : someSelected 
-                    ? `${selectedPatients.size} of ${filteredPatients.length} selected`
-                    : "Select all patients"}
-              </span>
-            </div>
-          )}
+            {/* Select All Header */}
+            {filteredPatients.length > 0 && (
+              <div className="flex items-center gap-3 mb-4 p-3 rounded-lg bg-muted/30" role="group" aria-label="Selection controls">
+                <Checkbox
+                  checked={allSelected}
+                  ref={(el) => {
+                    if (el) {
+                      (el as HTMLButtonElement & { indeterminate?: boolean }).indeterminate = someSelected;
+                    }
+                  }}
+                  onCheckedChange={handleSelectAll}
+                  className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  aria-label={allSelected ? "Deselect all patients" : "Select all patients"}
+                />
+                <span className="text-sm text-muted-foreground" aria-live="polite">
+                  {allSelected 
+                    ? `All ${filteredPatients.length} patients selected` 
+                    : someSelected 
+                      ? `${selectedPatients.size} of ${filteredPatients.length} selected`
+                      : "Select all patients (Ctrl+A)"}
+                </span>
+              </div>
+            )}
 
-          <div className="space-y-4">
-            {filteredPatients.length === 0 ? (
+            <div 
+              className="space-y-4" 
+              role="list" 
+              aria-label={`Patient alerts list, ${filteredPatients.length} items`}
+              aria-live="polite"
+              aria-relevant="additions removals"
+            >
+              {filteredPatients.length === 0 ? (
               <div className="glass-card p-8 text-center">
                 <p className="text-muted-foreground">No patients match the current filters.</p>
               </div>
@@ -351,8 +391,10 @@ const Dashboard: React.FC = () => {
             )}
           </div>
         </motion.div>
+        </section>
       </main>
     </div>
+    </>
   );
 };
 
