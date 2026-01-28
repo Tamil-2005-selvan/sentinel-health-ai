@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -6,10 +6,12 @@ import { PatientAlertCard } from "@/components/dashboard/PatientAlertCard";
 import { VitalSignsCharts } from "@/components/dashboard/VitalSignsCharts";
 import { PatientDistributionChart } from "@/components/dashboard/PatientDistributionChart";
 import { PatientFilters, FilterState } from "@/components/dashboard/PatientFilters";
-import { BulkActionsToolbar } from "@/components/dashboard/BulkActionsToolbar";
+import { BulkActionsToolbar, BulkActionsToolbarRef } from "@/components/dashboard/BulkActionsToolbar";
+import { KeyboardShortcutsHelp } from "@/components/dashboard/KeyboardShortcutsHelp";
 import { StatusType } from "@/components/ui/status-badge";
 import { NotificationSimulator } from "@/components/notifications/NotificationToast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { Users, CheckCircle, AlertTriangle, AlertOctagon, Activity } from "lucide-react";
 
 // Mock patient data - expanded for filtering demo
@@ -105,6 +107,8 @@ const Dashboard: React.FC = () => {
   const [selectedPatients, setSelectedPatients] = useState<Set<string>>(new Set());
   const [acknowledgedPatients, setAcknowledgedPatients] = useState<Set<string>>(new Set());
   const [patientWards, setPatientWards] = useState<Record<string, string>>({});
+  
+  const bulkActionsRef = useRef<BulkActionsToolbarRef>(null);
 
   const filteredPatients = useMemo(() => {
     return allPatientAlerts.filter((patient) => {
@@ -185,6 +189,15 @@ const Dashboard: React.FC = () => {
   const allSelected = filteredPatients.length > 0 && filteredPatients.every(p => selectedPatients.has(p.patientId));
   const someSelected = filteredPatients.some(p => selectedPatients.has(p.patientId)) && !allSelected;
 
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onSelectAll: () => handleSelectAll(true),
+    onAcknowledge: () => bulkActionsRef.current?.triggerAcknowledge(),
+    onExport: () => bulkActionsRef.current?.triggerExport(),
+    onClearSelection: handleClearSelection,
+    hasSelection: selectedPatients.size > 0,
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
       <Navbar />
@@ -256,21 +269,25 @@ const Dashboard: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">
+              <h2 className="text-xl font-semibold text-foreground" id="patient-alerts-heading">
                 Patient Alerts
               </h2>
               <p className="text-sm text-muted-foreground">
                 AI-analyzed health predictions with blockchain verification
               </p>
             </div>
-            <motion.div
-              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-full"
-              animate={{ scale: [1, 1.02, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-              <span className="text-sm font-medium text-secondary">Live Updates</span>
-            </motion.div>
+            <div className="flex items-center gap-2">
+              <KeyboardShortcutsHelp />
+              <motion.div
+                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-full"
+                animate={{ scale: [1, 1.02, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                aria-label="Live updates indicator"
+              >
+                <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" aria-hidden="true" />
+                <span className="text-sm font-medium text-secondary">Live Updates</span>
+              </motion.div>
+            </div>
           </div>
 
           {/* Filters */}
@@ -278,6 +295,7 @@ const Dashboard: React.FC = () => {
 
           {/* Bulk Actions Toolbar */}
           <BulkActionsToolbar
+            ref={bulkActionsRef}
             selectedCount={selectedPatients.size}
             selectedIds={Array.from(selectedPatients)}
             onClearSelection={handleClearSelection}
